@@ -1,71 +1,52 @@
 import tensorflow as tf
+import layers
 import parameters
 
 from tensorflow.examples.tutorials.mnist import input_data
-
 mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
 
 batch_size = 100
 learning_rate = 10
 training_epochs = 10
-n_nodes_layer_input = 784
-n_nodes_layer2 = 100
-n_nodes_layer3 = 100
-n_nodes_layer4 = 100
-n_nodes_layer_output = 10
 parameter_value_manual = 2
+parameter_list = []
+activated_units = []
 
-
-with tf.name_scope('input'):
-    x_input = tf.placeholder(tf.float32, shape=(None,784), name="x-input")
+with tf.name_scope('output'):
     y_output = tf.placeholder(tf.float32, shape=(None, 10), name="y-output")
 
-with tf.name_scope('weights'):
-    w_1 = parameters.value(n_nodes_layer_input, n_nodes_layer2)
-    #w_1 = parameters.manual_value(parameter_value_manual, n_nodes_layer_input, n_nodes_layer2)
-    w_2 = parameters.value(n_nodes_layer2, n_nodes_layer3)
-    #w_2 = parameters.manual_value(parameter_value_manual, n_nodes_layer2, n_nodes_layer3)
-    w_3 = parameters.value(n_nodes_layer3, n_nodes_layer4)
-    #w_3 = parameters.manual_value(parameter_value_manual, n_nodes_layer3, n_nodes_layer_output)
-    w_4 = parameters.value(n_nodes_layer4, n_nodes_layer_output)
 
-    w_no_hl = parameters.value(n_nodes_layer_input, n_nodes_layer_output)
+def neural_network(data, n_nodes_layers = None, n_hidden_layers = None):
 
-with tf.name_scope('biases'):
-    b_1 = tf.Variable(tf.random_normal([1, n_nodes_layer2]))
-    #b_1 = parameters.manual_value(parameter_value_manual, 1, n_nodes_layer2)
-    b_2 = tf.Variable(tf.random_normal([1, n_nodes_layer3]))
-    #b_2 = parameters.manual_value(parameter_value_manual, 1, n_nodes_layer3)
-    b_3 = tf.Variable(tf.random_normal([1, n_nodes_layer4]))
-    #b_3 = parameters.manual_value(parameter_value_manual, 1, n_nodes_layer_output)
-    b_4 = parameters.value(1,n_nodes_layer_output)
+    if n_nodes_layers is None:
+        n_nodes_layers = [n_nodes_layer_input, n_nodes_layer_output]
+
+    if len(n_nodes_layers) != (n_hidden_layers + 2):
+        raise ValueError('Number of hidden layers does not match layers in the list n_nodes_layers')
 
 
-def neural_network(data):
-    layer_2 = {'weights': w_1, 'biases': b_1}
+    for n in range(n_hidden_layers+1):
+        parameters_n = parameters.layer(n_nodes_layers[n], n_nodes_layers[n+1])
+        parameter_list.append(parameters_n)
 
-    layer_3 = {'weights': w_2, 'biases': b_2}
 
-    layer_4 = {'weights': w_3, 'biases': b_3}
+    parameters_output = parameters.layer(n_nodes_layers[-2], n_nodes_layers[-1])
 
-    output_layer = {'weights': w_4, 'biases': b_4}
 
-    l2 = tf.add(tf.matmul(data, layer_2['weights']), layer_2['biases'])
-    z_l2 = tf.sigmoid(l2)
+    if n_hidden_layers is None:
+        output = layers.hidden(data, parameters_output)
+    else:
+        activated_units.append(data)
+        for i in range(len(parameter_list)):
+            z_hl = layers.hidden_layer(activated_units[i], parameter_list[i])
+            activated_units.append(z_hl)
 
-    l3 = tf.add(tf.matmul(z_l2, layer_3['weights']), layer_3['biases'])
-    z_l3 = tf.sigmoid(l3)
-
-    l4 = tf.add(tf.matmul(z_l3, layer_4['weights']), layer_4['biases'])
-    z_l4 = tf.sigmoid(l4)
-
-    output = tf.add(tf.matmul(z_l4, output_layer['weights']), output_layer['biases'])
-    output = tf.sigmoid(output)
+        output = layers.hidden_layer(activated_units[len(activated_units)-2], parameters_output)
 
     return output
 
-def train_neural_network(x):
-    prediction = neural_network(x)
+def train_neural_network(x, n_nodes_layers, n_hidden_layers):
+    prediction = neural_network(x, n_nodes_layers, n_hidden_layers)
     with tf.name_scope("cost"):
         #cost = tf.contrib.losses.mean_squared_error(prediction, y_output)
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(prediction, y_output))
@@ -82,7 +63,7 @@ def train_neural_network(x):
 
     with tf.Session() as sess:
         summary_op = tf.merge_all_summaries()
-        writer = tf.train.SummaryWriter("./logs/3hidden_layers_300n", graph=tf.get_default_graph())
+        writer = tf.train.SummaryWriter("./logs/300units", graph=tf.get_default_graph())
 
         sess.run(tf.global_variables_initializer())
 
@@ -99,5 +80,3 @@ def train_neural_network(x):
 
 
         print('Accuracy:', accuracy.eval({x:mnist.test.images, y_output:mnist.test.labels}))
-
-train_neural_network(x_input)
