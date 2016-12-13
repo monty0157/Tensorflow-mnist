@@ -1,4 +1,4 @@
 #untracked files
 
-/logs/
+logs/*
 __pycache__
