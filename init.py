@@ -6,8 +6,8 @@ with tf.name_scope('input'):
 
 
 n_nodes_layer_input = 784
-n_nodes_layer2 = 300
-n_nodes_layer3 = 300
+n_nodes_layer2 = 75
+n_nodes_layer3 = 75
 n_nodes_layer4 = 25
 n_nodes_layer_output = 10
 

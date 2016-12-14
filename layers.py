@@ -1,4 +1,3 @@
-import parameters
 import tensorflow as tf
 
 def hidden_layer(data, layer):

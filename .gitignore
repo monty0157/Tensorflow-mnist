@@ -1,2 +1,8 @@
 /logs
 /__pycache__
+checkpoint
+my-model.data-00000-of-00001
+*.index
+*.meta
+*.jpg
+trained_model.py
