@@ -7,7 +7,7 @@ def manual_value(value, size_layer_j, size_layer_s):
     return parameter_variable
 
 def value(size_layer_j, size_layer_s):
-    parameter_value = tf.Variable(tf.random_normal([size_layer_j, size_layer_s]), name="weight")
+    parameter_value = tf.Variable(tf.truncated_normal([size_layer_j, size_layer_s]), name="weight")
 
     return parameter_value
 
