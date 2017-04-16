@@ -6,3 +6,4 @@ my-model.data-00000-of-00001
 *.meta
 *.jpg
 trained_model.py
+*.mat

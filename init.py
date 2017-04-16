@@ -2,10 +2,9 @@ import neural_net
 import tensorflow as tf
 
 with tf.name_scope('input'):
-    x_input = tf.placeholder(tf.float32, shape=(None,784), name="x-input")
+    x_input = tf.placeholder('float')
 
-
-n_nodes_layer_input = 784
+n_nodes_layer_input = int(32*32)
 n_nodes_layer2 = 75
 n_nodes_layer3 = 75
 n_nodes_layer4 = 25
