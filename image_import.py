@@ -1,35 +1,59 @@
 from PIL import Image
 import numpy as np
-from matplotlib import pyplot as plt
-import math
+import tensorflow as tf
 
-'''img = Image.open('./digit_test_2.png')
-#img.show()
-img = img.convert('RGB')
-image = np.asarray(img, dtype="uint8")
-#prevent matplotlib from converting image to negative
-plt.imshow(image)
-plt.show()
-print(image.shape)
-#image = image[::image.shape[0]/28,::image.shape[1]/28]
+def image_import(image):
+    #Load image from data
+    image_open = Image.open(image)
+    image_convert = image_open.convert('RGB')
+    image_array = np.asarray(image_convert, dtype="uint8")
 
-image = image[::math.floor(image.shape[0]/28),::math.floor(image.shape[1]/28)]
+    return image_array
 
-image = image[1:-1, 1:-1]
+def downsample(image_array, size):
 
-image = image.reshape(48,49)
+    #downsample image to given size
+    image_downsample = image_array[::image_array.shape[0]/size,::image_array.shape[1]/size]
 
-print(image.shape)
-#image_show = Image.fromarray(image)
-#image_show.show()
-plt.imshow(image)
-plt.show()'''
+    #get image shape and finish downsampling
+    image_get_shape = image_downsample.shape
+    image_downsample = image_downsample[image_get_shape[0]-size:, image_get_shape[1]-size:]
 
-'''def downsample(data):
-    image = Image.open(data)
-    image = image.convert('RGB')
-    image = np.asarray(image, dtype="uint8")
-    print(image.shape)
-    image = image[::image.shape[0]/28,::image.shape[1]/28]
+    '''with tf.Session() as sess:
+        image_downsample = tf.image.resize_images(image_array, (size,size)).eval()'''
+    return image_downsample
 
-    return image'''
+def rgb_to_gray(data):
+    grey = np.zeros((data.shape[0], data.shape[1]))
+
+    for row in range (len(data)):
+        for column in range(len(data[row])):
+            #take average pixel value across channels and reduce range to between 0 and 1
+            grey[row][column] = np.average(data[row][column])
+
+    return grey
+
+#Webcam mirrors image
+def horizontal_mirror(image_array):
+    mirror = np.fliplr(image_array)
+
+    return mirror
+
+def image_round(image_array):
+    image_array = ((255-image_array)/255)
+    #Round values of pixels
+    for pixel in range (len(image_array)):
+        image_array[pixel] = np.around(image_array[pixel])
+    return image_array
+
+def image_processed(image, size, mirrored_image=True):
+    image_array = image_import(image)
+    image_downsample = downsample(image_array, size)
+    convert_channels = rgb_to_gray(image_downsample)
+    _round = image_round(convert_channels)
+    mirror = horizontal_mirror(_round)
+
+    if(mirrored_image == False):
+        return _round
+
+    return mirror

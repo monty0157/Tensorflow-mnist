@@ -7,3 +7,4 @@ my-model.data-00000-of-00001
 *.jpg
 trained_model.py
 *.mat
+*.png
